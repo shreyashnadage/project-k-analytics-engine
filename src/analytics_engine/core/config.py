@@ -6,6 +6,7 @@ Config cascade: _base.yaml -> vertical.yaml -> client_overrides (JSONB)
 from __future__ import annotations
 
 import copy
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -81,7 +82,9 @@ def _load_yaml(path: Path) -> dict:
 
 
 class ConfigLoader:
-    def __init__(self, config_dir: Path | str):
+    def __init__(self, config_dir: Path | str | None = None):
+        if config_dir is None:
+            config_dir = os.getenv("CONFIG_DIR", str(Path(__file__).resolve().parents[3] / "config"))
         self._config_dir = Path(config_dir)
         self._vertical_cache: dict[str, dict] = {}
 
