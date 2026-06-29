@@ -45,7 +45,7 @@ async def trigger_pipeline(
     background_tasks.add_task(_run_pipeline, client_id)
     return PipelineTriggerResponse(
         run_id="queued",
-        status="queued",
+        status="running",
         message=f"Pipeline triggered for client {client_id}",
     )
 

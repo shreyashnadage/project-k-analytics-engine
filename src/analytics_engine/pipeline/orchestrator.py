@@ -43,6 +43,7 @@ class PipelineOrchestrator:
 
             # Layer 1: Sync
             ctx.current_layer = 1
+            self._update_layer_progress(session, ctx)
             l1 = L1Sync(session)
             l1.execute(ctx)
             if ctx.sync_stats.total == 0:
@@ -52,17 +53,20 @@ class PipelineOrchestrator:
 
             # Layer 2: Normalize
             ctx.current_layer = 2
+            self._update_layer_progress(session, ctx)
             l2 = L2Normalize(session, self._config)
             l2.execute(ctx)
 
             # Layer 3: Stage into DuckDB
             ctx.current_layer = 3
+            self._update_layer_progress(session, ctx)
             duck = self._duck_factory()
             l3 = L3Staging(session)
             l3.execute(ctx, duck)
 
             # Layer 4: Compute metrics
             ctx.current_layer = 4
+            self._update_layer_progress(session, ctx)
             l4 = L4Analytics(session, self._config)
             l4.execute(ctx, duck)
 
@@ -70,15 +74,19 @@ class PipelineOrchestrator:
 
             # Layer 5: Generate insights
             ctx.current_layer = 5
+            self._update_layer_progress(session, ctx)
             l5 = L5Insight(session)
             l5.execute(ctx)
 
             # Layer 6: Run detectors, raise alerts
             ctx.current_layer = 6
+            self._update_layer_progress(session, ctx)
             l6 = L6Action(session, self._config)
             l6.execute(ctx)
 
             # Loan recommendations
+            ctx.current_layer = 7
+            self._update_layer_progress(session, ctx)
             loan_engine = LoanEngine(session, self._config)
             loan_engine.evaluate(ctx)
 
@@ -125,6 +133,15 @@ class PipelineOrchestrator:
             vertical=vertical,
             profile=profile,
         )
+
+    def _update_layer_progress(self, session: Session, ctx: PipelineContext) -> None:
+        run = session.query(PipelineRun).filter_by(run_id=ctx.run_id).first()
+        if run:
+            run.layer_reached = ctx.current_layer
+            run.vouchers_pulled = ctx.sync_stats.vouchers_pulled
+            run.metrics_computed = ctx.metrics_computed
+            run.alerts_raised = ctx.alerts_raised
+            session.commit()
 
     def _record_run_start(self, session: Session, ctx: PipelineContext) -> None:
         run = PipelineRun(
