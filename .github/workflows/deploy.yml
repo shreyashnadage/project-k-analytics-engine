@@ -67,7 +67,7 @@ jobs:
               # Add analytics-specific env vars
               echo "" >> "$DEPLOY_DIR/.env"
               echo "ANALYTICS_SCHEMA=analytics" >> "$DEPLOY_DIR/.env"
-              echo "API_PORT=8100" >> "$DEPLOY_DIR/.env"
+              echo "API_PORT=8001" >> "$DEPLOY_DIR/.env"
               echo "CONFIG_DIR=$DEPLOY_DIR/config" >> "$DEPLOY_DIR/.env"
             fi
 
@@ -86,7 +86,7 @@ jobs:
             User=ubuntu
             WorkingDirectory=/opt/project-k-analytics
             EnvironmentFile=/opt/project-k-analytics/.env
-            ExecStart=/opt/project-k-analytics/venv/bin/uvicorn analytics_engine.api.app:app --host 0.0.0.0 --port 8100
+            ExecStart=/opt/project-k-analytics/venv/bin/uvicorn analytics_engine.api.app:app --host 0.0.0.0 --port 8001
             Restart=always
             RestartSec=10
 
@@ -121,5 +121,5 @@ jobs:
 
             # Wait and verify API
             sleep 3
-            curl -sf http://localhost:8100/analytics/health || { echo "Health check failed!"; sudo journalctl -u project-k-analytics-api.service --no-pager -n 20; exit 1; }
+            curl -sf http://localhost:8001/analytics/health || { echo "Health check failed!"; sudo journalctl -u project-k-analytics-api.service --no-pager -n 20; exit 1; }
             echo "Deploy successful!"

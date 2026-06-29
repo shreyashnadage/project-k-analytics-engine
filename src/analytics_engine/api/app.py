@@ -1,5 +1,7 @@
 """FastAPI application factory."""
 
+import os
+
 from fastapi import FastAPI
 
 from analytics_engine.api.routes_admin import router as admin_router
@@ -15,7 +17,7 @@ def create_app() -> FastAPI:
         title="Project K Analytics Engine",
         description="Working capital analytics for Indian MSMEs",
         version="0.1.0",
-        root_path="/analytics",
+        root_path=os.getenv("API_ROOT_PATH", ""),
     )
 
     app.include_router(health_router)
