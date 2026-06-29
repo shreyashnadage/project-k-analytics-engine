@@ -3,6 +3,7 @@
 import os
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from analytics_engine.api.routes_admin import router as admin_router
 from analytics_engine.api.routes_alerts import router as alerts_router
@@ -18,6 +19,14 @@ def create_app() -> FastAPI:
         description="Working capital analytics for Indian MSMEs",
         version="0.1.0",
         root_path=os.getenv("API_ROOT_PATH", ""),
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     app.include_router(health_router)

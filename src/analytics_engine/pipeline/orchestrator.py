@@ -35,10 +35,10 @@ class PipelineOrchestrator:
         self._duck_factory = duck_factory
         self._config = config_loader
 
-    def run_for_client(self, client_id: str) -> PipelineContext:
+    def run_for_client(self, client_id: str, run_id: str | None = None) -> PipelineContext:
         session = self._session_factory()
         try:
-            ctx = self._build_context(session, client_id)
+            ctx = self._build_context(session, client_id, run_id=run_id)
             self._record_run_start(session, ctx)
 
             # Layer 1: Sync
@@ -105,7 +105,7 @@ class PipelineOrchestrator:
         finally:
             session.close()
 
-    def _build_context(self, session: Session, client_id: str) -> PipelineContext:
+    def _build_context(self, session: Session, client_id: str, run_id: str | None = None) -> PipelineContext:
         # Resolve tenant_ids from sync_records
         tenant_rows = (
             session.query(SyncRecord.tenant_id)
@@ -127,12 +127,15 @@ class PipelineOrchestrator:
 
         profile = self._config.resolve_client_config(vertical, overrides)
 
-        return PipelineContext(
+        ctx = PipelineContext(
             client_id=client_id,
             tenant_ids=tenant_ids,
             vertical=vertical,
             profile=profile,
         )
+        if run_id:
+            ctx.run_id = run_id
+        return ctx
 
     def _update_layer_progress(self, session: Session, ctx: PipelineContext) -> None:
         run = session.query(PipelineRun).filter_by(run_id=ctx.run_id).first()
@@ -144,6 +147,12 @@ class PipelineOrchestrator:
             session.commit()
 
     def _record_run_start(self, session: Session, ctx: PipelineContext) -> None:
+        existing = session.query(PipelineRun).filter_by(run_id=ctx.run_id).first()
+        if existing:
+            existing.status = "running"
+            existing.started_at = ctx.started_at
+            session.commit()
+            return
         run = PipelineRun(
             run_id=ctx.run_id,
             client_id=ctx.client_id,

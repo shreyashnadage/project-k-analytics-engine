@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
@@ -23,7 +25,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-def _run_pipeline(client_id: str):
+def _run_pipeline(client_id: str, run_id: str):
     try:
         config = get_config_loader()
         orchestrator = PipelineOrchestrator(
@@ -31,9 +33,19 @@ def _run_pipeline(client_id: str):
             duck_factory=get_duck,
             config_loader=config,
         )
-        orchestrator.run_for_client(client_id)
+        orchestrator.run_for_client(client_id, run_id=run_id)
     except Exception:
         logger.exception("Background pipeline failed for client %s", client_id)
+        session = create_session()
+        try:
+            run = session.query(PipelineRun).filter_by(run_id=run_id).first()
+            if run and run.status == "running":
+                run.status = "failed"
+                run.finished_at = datetime.now(timezone.utc)
+                run.error_message = "Pipeline crashed unexpectedly"
+                session.commit()
+        finally:
+            session.close()
 
 
 @router.post("/pipeline/{client_id}/trigger", response_model=PipelineTriggerResponse)
@@ -42,9 +54,20 @@ async def trigger_pipeline(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
-    background_tasks.add_task(_run_pipeline, client_id)
+    run_id = str(uuid.uuid4())
+    run = PipelineRun(
+        run_id=run_id,
+        client_id=client_id,
+        started_at=datetime.now(timezone.utc),
+        status="running",
+        layer_reached=0,
+    )
+    db.add(run)
+    db.commit()
+
+    background_tasks.add_task(_run_pipeline, client_id, run_id)
     return PipelineTriggerResponse(
-        run_id="queued",
+        run_id=run_id,
         status="running",
         message=f"Pipeline triggered for client {client_id}",
     )
