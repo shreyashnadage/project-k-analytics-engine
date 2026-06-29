@@ -1,0 +1,34 @@
+category: working_capital
+
+templates:
+  - metric_code: working_capital.current_ratio
+    severity_rules:
+      critical: "value < 1.0"
+      warning: "value < 1.2"
+      info: "true"
+    messages:
+      critical:
+        title: "Short-term obligations exceed your assets"
+        body: "Your current ratio is {value:.2f} — this means your short-term debts are more than what you can quickly convert to cash. This is a red flag for your financial health."
+      warning:
+        title: "Working capital is getting tight"
+        body: "Your current ratio is {value:.2f}. While you can still cover your short-term obligations, there's not much cushion. Consider reducing short-term borrowing or speeding up collections."
+      info:
+        title: "Working capital position is healthy"
+        body: "Your current ratio is {value:.2f}, which means you have enough short-term assets to cover your obligations."
+
+  - metric_code: ccc.cash_conversion_cycle
+    severity_rules:
+      critical: "value > 90"
+      warning: "value > 60"
+      info: "true"
+    messages:
+      critical:
+        title: "Your cash cycle is stretched dangerously"
+        body: "It takes {value:.0f} days from when you spend cash on inventory/purchases to when you receive payment. This is very long — your money stays locked up for {value:.0f} days in every business cycle."
+      warning:
+        title: "Cash cycle is longer than ideal"
+        body: "Your cash conversion cycle is {value:.0f} days. Look for ways to collect faster, manage inventory better, or negotiate longer supplier terms."
+      info:
+        title: "Cash cycle is efficient"
+        body: "Your cash conversion cycle is {value:.0f} days, which means cash flows back to you relatively quickly."

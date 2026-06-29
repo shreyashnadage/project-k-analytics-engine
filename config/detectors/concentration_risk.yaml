@@ -1,0 +1,13 @@
+code: concentration_risk
+name: "Revenue/Debtor Concentration Risk"
+description: "Alerts when a small number of parties dominate receivables or revenue"
+
+parameters:
+  top_n: 3
+  critical_threshold_pct: 60
+  warning_threshold_pct: 40
+  cooldown_days: 14
+
+severity_rules:
+  critical: "top_n_pct >= critical_threshold_pct"
+  warning: "top_n_pct >= warning_threshold_pct"

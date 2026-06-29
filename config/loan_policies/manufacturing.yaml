@@ -1,0 +1,22 @@
+extends: _base
+
+products:
+  - $inherit
+  - code: purchase_finance
+    name: "Purchase Order Finance"
+    description: "Financing against confirmed purchase orders for raw material procurement"
+    eligibility_rules:
+      - rule: min_revenue_6m
+        threshold_paise: 100000000  # 10L minimum
+        weight: 0.3
+      - rule: positive_nwc
+        weight: 0.2
+      - rule: healthy_inventory_turnover
+        min_turnover_ratio: 2.0
+        weight: 0.2
+      - rule: no_critical_alerts
+        weight: 0.3
+    amount_formula: "avg_monthly_purchases * 2"
+    max_tenor_months: 6
+    min_amount_paise: 20000000   # 2L
+    max_amount_paise: 3000000000 # 3Cr

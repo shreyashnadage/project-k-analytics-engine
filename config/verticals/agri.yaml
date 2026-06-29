@@ -1,0 +1,14 @@
+extends: _base
+
+metrics:
+  enabled:
+    - $inherit
+    - inventory.dio
+    - inventory.stock_turnover
+
+detectors:
+  overrides:
+    sales_decline:
+      lookback_months: 6
+    liquidity_shortfall:
+      projection_horizon_days: 45

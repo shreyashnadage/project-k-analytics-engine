@@ -1,0 +1,125 @@
+name: Deploy Analytics Engine
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+          pip install -e .
+      - name: Run tests
+        run: pytest tests/ -v
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            DEPLOY_DIR="/opt/project-k-analytics"
+            REPO_URL="https://github.com/shreyashnadage/project-k-analytics-engine.git"
+
+            # First deploy: clone. Subsequent: pull.
+            if [ ! -d "$DEPLOY_DIR/.git" ]; then
+              sudo mkdir -p "$DEPLOY_DIR"
+              sudo chown ubuntu:ubuntu "$DEPLOY_DIR"
+              git clone "$REPO_URL" "$DEPLOY_DIR"
+            else
+              cd "$DEPLOY_DIR"
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+
+            cd "$DEPLOY_DIR"
+
+            # Create/update venv and install deps
+            if [ ! -d "venv" ]; then
+              python3.12 -m venv venv
+            fi
+            venv/bin/pip install --quiet --upgrade pip
+            venv/bin/pip install --quiet -r requirements.txt
+            venv/bin/pip install --quiet -e .
+
+            # Copy env file from backend if we don't have one yet
+            if [ ! -f "$DEPLOY_DIR/.env" ] && [ -f "/opt/project-k-backend/.env" ]; then
+              cp /opt/project-k-backend/.env "$DEPLOY_DIR/.env"
+              # Add analytics-specific env vars
+              echo "" >> "$DEPLOY_DIR/.env"
+              echo "ANALYTICS_SCHEMA=analytics" >> "$DEPLOY_DIR/.env"
+              echo "API_PORT=8100" >> "$DEPLOY_DIR/.env"
+              echo "CONFIG_DIR=$DEPLOY_DIR/config" >> "$DEPLOY_DIR/.env"
+            fi
+
+            # Run alembic migrations
+            cd "$DEPLOY_DIR"
+            venv/bin/alembic upgrade head
+
+            # Install systemd services
+            sudo tee /etc/systemd/system/project-k-analytics-api.service > /dev/null <<'UNIT'
+            [Unit]
+            Description=Project K Analytics API (FastAPI)
+            After=network.target postgresql.service
+
+            [Service]
+            Type=simple
+            User=ubuntu
+            WorkingDirectory=/opt/project-k-analytics
+            EnvironmentFile=/opt/project-k-analytics/.env
+            ExecStart=/opt/project-k-analytics/venv/bin/uvicorn analytics_engine.api.app:app --host 0.0.0.0 --port 8100
+            Restart=always
+            RestartSec=10
+
+            [Install]
+            WantedBy=multi-user.target
+            UNIT
+
+            sudo tee /etc/systemd/system/project-k-analytics-scheduler.service > /dev/null <<'UNIT'
+            [Unit]
+            Description=Project K Analytics Scheduler (Batch Pipeline)
+            After=network.target postgresql.service
+
+            [Service]
+            Type=simple
+            User=ubuntu
+            WorkingDirectory=/opt/project-k-analytics
+            EnvironmentFile=/opt/project-k-analytics/.env
+            ExecStart=/opt/project-k-analytics/venv/bin/analytics-engine scheduler
+            Restart=always
+            RestartSec=30
+
+            [Install]
+            WantedBy=multi-user.target
+            UNIT
+
+            sudo systemctl daemon-reload
+            sudo systemctl enable project-k-analytics-api.service
+            sudo systemctl enable project-k-analytics-scheduler.service
+
+            sudo systemctl restart project-k-analytics-api.service
+            sudo systemctl restart project-k-analytics-scheduler.service
+
+            # Wait and verify API
+            sleep 3
+            curl -sf http://localhost:8100/analytics/health || { echo "Health check failed!"; sudo journalctl -u project-k-analytics-api.service --no-pager -n 20; exit 1; }
+            echo "Deploy successful!"

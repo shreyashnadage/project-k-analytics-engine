@@ -1,0 +1,13 @@
+code: ccc_stretch
+name: "Cash Conversion Cycle Stretching"
+description: "Alerts when the cash conversion cycle is widening beyond the client's normal range"
+
+parameters:
+  threshold_days: 60
+  growth_threshold_pct: 15
+  lookback_months: 6
+  cooldown_days: 14
+
+severity_rules:
+  critical: "ccc_days > threshold_days and growth_pct >= growth_threshold_pct * 2"
+  warning: "ccc_days > threshold_days or growth_pct >= growth_threshold_pct"

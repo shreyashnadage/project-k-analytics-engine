@@ -1,0 +1,78 @@
+extends: null
+
+ledger_classification:
+  cash:
+    - "Cash-in-Hand"
+    - "Cash"
+  bank:
+    - "Bank Accounts"
+    - "Bank OD A/c"
+    - "Bank OCC A/c"
+  sundry_debtors:
+    - "Sundry Debtors"
+  sundry_creditors:
+    - "Sundry Creditors"
+  sales:
+    - "Sales Accounts"
+    - "Sales"
+  purchase:
+    - "Purchase Accounts"
+    - "Purchases"
+  direct_expense:
+    - "Direct Expenses"
+  indirect_expense:
+    - "Indirect Expenses"
+  fixed_asset:
+    - "Fixed Assets"
+  current_asset:
+    - "Current Assets"
+  current_liability:
+    - "Current Liabilities"
+    - "Provisions"
+  capital:
+    - "Capital Account"
+    - "Reserves & Surplus"
+  duties_taxes:
+    - "Duties & Taxes"
+  loans_advances:
+    - "Loans & Advances (Asset)"
+    - "Secured Loans"
+    - "Unsecured Loans"
+    - "Loans (Liability)"
+
+metrics:
+  enabled:
+    - receivables.dso
+    - receivables.aging_buckets
+    - receivables.concentration
+    - payables.dpo
+    - payables.aging_buckets
+    - payables.concentration
+    - cash_flow.net_operating
+    - cash_flow.burn_rate
+    - working_capital.current_ratio
+    - working_capital.net_working_capital
+    - revenue.monthly_trend
+    - revenue.mom_growth
+    - ccc.cash_conversion_cycle
+
+detectors:
+  enabled:
+    - liquidity_shortfall
+    - concentration_risk
+    - aging_deterioration
+    - payable_cliff
+    - sales_decline
+    - ccc_stretch
+  overrides: {}
+
+aging_buckets:
+  boundaries_days: [0, 30, 60, 90, 180, 365]
+  labels: ["Current", "1-30", "31-60", "61-90", "91-180", "180+"]
+
+fiscal_year:
+  start_month: 4
+
+amount_format:
+  display: indian
+  decimal_places: 2

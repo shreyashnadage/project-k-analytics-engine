@@ -1,0 +1,14 @@
+code: aging_deterioration
+name: "Receivables Aging Deterioration"
+description: "Detects when the proportion of overdue receivables is growing month-over-month"
+
+parameters:
+  overdue_threshold_days: 90
+  critical_growth_pct: 20
+  warning_growth_pct: 10
+  lookback_months: 3
+  cooldown_days: 14
+
+severity_rules:
+  critical: "overdue_growth_pct >= critical_growth_pct"
+  warning: "overdue_growth_pct >= warning_growth_pct"

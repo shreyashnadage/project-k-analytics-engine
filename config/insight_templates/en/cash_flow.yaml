@@ -1,0 +1,30 @@
+category: cash_flow
+
+templates:
+  - metric_code: cash_flow.net_operating
+    severity_rules:
+      critical: "value < 0"
+      info: "true"
+    messages:
+      critical:
+        title: "Your business is spending more than it earns"
+        body: "Your operating cash flow is negative ({formatted_value}). This means more cash is going out than coming in from operations. Review your expenses and collection practices urgently."
+      info:
+        title: "Cash flow from operations"
+        body: "Your business generated {formatted_value} in net operating cash flow this period."
+
+  - metric_code: cash_flow.burn_rate
+    severity_rules:
+      critical: "runway_days < 30"
+      warning: "runway_days < 60"
+      info: "true"
+    messages:
+      critical:
+        title: "Cash running out fast"
+        body: "At your current spending rate, you have about {runway_days:.0f} days of cash left. This needs immediate attention — consider collecting overdue payments or arranging short-term credit."
+      warning:
+        title: "Cash position needs attention"
+        body: "You have about {runway_days:.0f} days of cash runway. Start planning ahead to ensure you don't run into a crunch."
+      info:
+        title: "Cash position is comfortable"
+        body: "You have about {runway_days:.0f} days of cash runway at your current pace."

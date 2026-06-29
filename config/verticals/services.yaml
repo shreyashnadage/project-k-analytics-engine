@@ -1,0 +1,7 @@
+extends: _base
+
+detectors:
+  overrides:
+    concentration_risk:
+      critical_threshold_pct: 50
+      warning_threshold_pct: 30

@@ -1,0 +1,30 @@
+category: receivables
+
+templates:
+  - metric_code: receivables.dso
+    severity_rules:
+      critical: "value > 90"
+      warning: "value > 60"
+      info: "true"
+    messages:
+      critical:
+        title: "Customers are taking too long to pay"
+        body: "Your customers take {value:.0f} days on average to pay you. This is very high — it means your money is stuck for over 3 months after each sale. Consider tightening payment terms or following up actively on overdue invoices."
+      warning:
+        title: "Payment collection is slowing down"
+        body: "Your average collection period is {value:.0f} days. While not critical yet, this ties up your cash. Consider reaching out to your top debtors to speed up payments."
+      info:
+        title: "Collection period is healthy"
+        body: "Customers pay you in {value:.0f} days on average. This is within a healthy range for your industry."
+
+  - metric_code: receivables.concentration
+    severity_rules:
+      critical: "top_3_pct >= 60"
+      warning: "top_3_pct >= 40"
+    messages:
+      critical:
+        title: "Too much depends on a few customers"
+        body: "Your top 3 customers account for {top_3_pct:.0f}% of what's owed to you. If any one of them delays or defaults, your cash flow takes a serious hit. Try to diversify your customer base."
+      warning:
+        title: "Customer concentration is building up"
+        body: "Your top 3 customers make up {top_3_pct:.0f}% of your receivables. Keep an eye on this — over-dependence on few customers is risky."

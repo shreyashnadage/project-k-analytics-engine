@@ -1,0 +1,21 @@
+extends: _base
+
+ledger_classification:
+  direct_expense:
+    - $inherit
+    - "Manufacturing Expenses"
+    - "Factory Expenses"
+    - "Power & Fuel"
+    - "Consumable Stores"
+
+metrics:
+  enabled:
+    - $inherit
+    - inventory.dio
+    - inventory.stock_turnover
+    - inventory.raw_material_coverage
+
+detectors:
+  enabled:
+    - $inherit
+    - inventory_buildup

@@ -1,0 +1,26 @@
+category: payables
+
+templates:
+  - metric_code: payables.dpo
+    severity_rules:
+      warning: "value > 60"
+      info: "true"
+    messages:
+      warning:
+        title: "You're stretching supplier payments"
+        body: "You take {value:.0f} days on average to pay your suppliers. While this helps your cash position short-term, it can damage supplier relationships and lead to tighter credit terms."
+      info:
+        title: "Supplier payment cycle is normal"
+        body: "You pay your suppliers in {value:.0f} days on average, which is reasonable for your business."
+
+  - metric_code: payables.concentration
+    severity_rules:
+      critical: "top_3_pct >= 60"
+      warning: "top_3_pct >= 40"
+    messages:
+      critical:
+        title: "Heavy dependence on few suppliers"
+        body: "Your top 3 suppliers account for {top_3_pct:.0f}% of what you owe. If any of them changes terms or stops supply, your business could be disrupted."
+      warning:
+        title: "Supplier concentration is worth watching"
+        body: "Top 3 suppliers are {top_3_pct:.0f}% of your payables. Consider building backup supplier relationships."

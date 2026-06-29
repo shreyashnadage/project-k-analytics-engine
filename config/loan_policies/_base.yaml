@@ -1,0 +1,38 @@
+extends: null
+
+products:
+  - code: cash_credit
+    name: "Cash Credit / Working Capital"
+    description: "Revolving credit facility against current assets"
+    eligibility_rules:
+      - rule: min_revenue_6m
+        threshold_paise: 50000000  # 5L minimum 6-month revenue
+        weight: 0.3
+      - rule: positive_nwc
+        weight: 0.2
+      - rule: dso_reasonable
+        max_days: 90
+        weight: 0.2
+      - rule: no_critical_alerts
+        weight: 0.3
+    amount_formula: "net_working_capital * 0.75"
+    max_tenor_months: 12
+    min_amount_paise: 10000000   # 1L
+    max_amount_paise: 5000000000 # 5Cr
+
+  - code: invoice_discounting
+    name: "Invoice Discounting"
+    description: "Short-term financing against outstanding trade receivables"
+    eligibility_rules:
+      - rule: min_receivables
+        threshold_paise: 20000000  # 2L minimum receivables
+        weight: 0.4
+      - rule: debtor_quality
+        max_overdue_pct: 30
+        weight: 0.3
+      - rule: no_critical_alerts
+        weight: 0.3
+    amount_formula: "eligible_receivables * 0.80"
+    max_tenor_months: 3
+    min_amount_paise: 5000000    # 50K
+    max_amount_paise: 2000000000 # 2Cr

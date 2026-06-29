@@ -1,0 +1,13 @@
+code: sales_decline
+name: "Sustained Sales Decline"
+description: "Detects when rolling sales fall below the historical normal band"
+
+parameters:
+  lookback_months: 6
+  decline_threshold_pct: 15
+  consecutive_months: 2
+  cooldown_days: 14
+
+severity_rules:
+  critical: "decline_pct >= decline_threshold_pct and consecutive >= 3"
+  warning: "decline_pct >= decline_threshold_pct and consecutive >= consecutive_months"

@@ -1,0 +1,14 @@
+extends: _base
+
+metrics:
+  enabled:
+    - $inherit
+    - inventory.dio
+    - inventory.stock_turnover
+
+detectors:
+  overrides:
+    ccc_stretch:
+      threshold_days: 45
+    sales_decline:
+      lookback_months: 3

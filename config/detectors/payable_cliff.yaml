@@ -1,0 +1,13 @@
+code: payable_cliff
+name: "Payable Cliff Warning"
+description: "Alerts when a large lump of payables falls due in the same short window"
+
+parameters:
+  window_days: 7
+  cliff_threshold_pct: 30
+  min_cliff_amount_inr: 100000
+  cooldown_days: 7
+
+severity_rules:
+  critical: "cliff_pct >= cliff_threshold_pct and cliff_amount >= min_cliff_amount_inr * 2"
+  warning: "cliff_pct >= cliff_threshold_pct"

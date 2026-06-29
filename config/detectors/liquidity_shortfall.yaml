@@ -1,0 +1,14 @@
+code: liquidity_shortfall
+name: "Liquidity Shortfall Warning"
+description: "Detects when projected cash position may be insufficient for upcoming obligations"
+
+parameters:
+  projection_horizon_days: 30
+  critical_threshold_ratio: 0.5
+  warning_threshold_ratio: 0.8
+  min_shortfall_inr: 50000
+  cooldown_days: 7
+
+severity_rules:
+  critical: "projected_ratio < critical_threshold_ratio"
+  warning: "projected_ratio < warning_threshold_ratio"

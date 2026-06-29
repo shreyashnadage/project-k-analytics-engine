@@ -1,0 +1,15 @@
+# Pipeline scheduling defaults per client plan tier.
+# Intervals in minutes. Can be overridden per-client via admin API.
+
+plan_tiers:
+  trial:
+    interval_minutes: 360    # 6 hours
+  basic:
+    interval_minutes: 120    # 2 hours
+  professional:
+    interval_minutes: 60     # 1 hour
+
+# Batch size limits per pipeline run
+batch_limits:
+  max_vouchers_per_pull: 10000
+  max_ledgers_per_pull: 5000
